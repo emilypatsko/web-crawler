@@ -16,21 +16,19 @@ public class WebCrawler {
 
     private final String startUrl;
     private final Integer timeoutInMilliseconds;
-    private final String rootDomain;
     private final LinkedList<String> urlsToVisit = new LinkedList<>();
     private final Set<String> visitedUrls = new HashSet<>();
     private final Map<String, String> failedUrls = new HashMap<>();
     private final Boolean debugMode;
 
     private String normalizedStartUrl;
+    private String rootDomain;
     private long startTime;
-
 
     public WebCrawler(String startUrl, Integer timeoutInSeconds, Boolean debugMode) {
         this.startUrl = startUrl;
         this.timeoutInMilliseconds = timeoutInSeconds * 1000;
         this.debugMode = debugMode;
-        this.rootDomain = URI.create(startUrl).getHost();
     }
 
     public void crawl() {
@@ -58,7 +56,7 @@ public class WebCrawler {
         try {
             normalizedStartUrl = normalizeUrl(startUrl, startUrl);
             urlsToVisit.add(normalizedStartUrl);
-
+            rootDomain = URI.create(normalizedStartUrl).getHost();
         } catch (Exception e) {
             System.out.println("Starting URL is invalid. Cannot start crawling.");
             return false;
@@ -76,10 +74,25 @@ public class WebCrawler {
         System.out.println("Crawling finished! Visited " + visitedUrls.size() + " distinct URLs:");
         visitedUrls.forEach(System.out::println);
 
-        if (debugMode) {
+        if (!failedUrls.isEmpty()) {
             System.out.println("\nFailed to visit URLS: ");
-            failedUrls.forEach((url, failureReason) -> System.out.println(url + ", reason: " + failureReason));
+
+            if (debugMode) {
+                printFailedUrlsWithReason();
+            } else {
+                printFailedUrls();
+
+            }
         }
+    }
+
+    private void printFailedUrls() {
+        failedUrls.keySet().forEach(System.out::println);
+    }
+
+    private void printFailedUrlsWithReason() {
+        failedUrls.forEach((url, failureReason) -> System.out.println(url + ", reason: " + failureReason));
+
     }
 
     private boolean thereAreUrlsToVisitAndProcessHasNotExceededTimeout() {
@@ -150,8 +163,13 @@ public class WebCrawler {
         return failedUrls.containsKey(url);
     }
 
+    // url provided should be absolute, not relative
     private String normalizeUrl(String url, String base) {
         var baseUri = URI.create(base);
+
+        if (baseUri.getAuthority() == null) {
+            throw new IllegalArgumentException("Base URI must have a authority");
+        }
 
         // Get rid of illegal characters in raw href (e.g. spaces)
         var encodedUrl = fixHrefEncoding(url);
