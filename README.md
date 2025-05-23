@@ -35,11 +35,11 @@ At the moment:
  - Doesn't work with URLs which redirect
  - Ignores URL fragments **and query parameters**
  - Has difficulties with encoding, such as foreign characters and encoded spaces
- - Currently no test suite!
+ - Minimal test coverage
 
 ### Future improvements
 
  - Use a headless browser, such as Selenium, to cope with dynamic content
  - Persist query parameters, so e.g. `/?page=1` and `/?page=2` would be treated as two distinct URLs
- - Add tests!
+ - Improve test coverage
  - Improve file structure, e.g. put common helper methods in `/helpers` folder
