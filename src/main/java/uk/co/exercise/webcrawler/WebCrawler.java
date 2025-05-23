@@ -121,7 +121,7 @@ public class WebCrawler {
     }
 
     private void addLinksOnPageToQueue(String url) throws IOException {
-        var document = Jsoup.connect(url).followRedirects(true).timeout(TEN_SECONDS_IN_MILLISECONDS).get();
+        var document = Jsoup.connect(url).timeout(TEN_SECONDS_IN_MILLISECONDS).get();
         var linkElements = document.select("a[href]");
         var baseUri = document.baseUri();
 
@@ -201,7 +201,7 @@ public class WebCrawler {
 
         // This is an attempt to fix jsoup's encoding/decoding issues of URL paths
         // Slashes get encoded as %2F and spaces get replaced with +, but should be %20
-        return Arrays.stream(path.split("/"))
+        return Arrays.stream(path.split("/", -1))
                 .map(segment ->
                     URLEncoder.encode(segment, StandardCharsets.UTF_8)
                         .replace("+", "%20"))
